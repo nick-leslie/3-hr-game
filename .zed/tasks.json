@@ -4,7 +4,7 @@
 [
   {
     "label": "build game lib",
-    "command": "odin build game.odin -file -build-mode:dll -out:./build/game.dll",
+    "command": "odin build game.odin -file -build-mode:dll -out:./build/game.so",
     //"args": [],
     // Env overrides for the command, will be appended to the terminal's environment from the settings.
     "env": { "foo": "bar" },
@@ -102,7 +102,7 @@
   },
   {
     "label": "run game",
-    "command": "odin build game.odin -file -build-mode:dll -out:./build/game.dll && odin run ./main.odin -file -out:./build/main",
+    "command": "odin build game.odin -file -build-mode:dll -out:./build/game.so && odin run ./main.odin -file -out:./build/main -debug",
     //"args": [],
     // Env overrides for the command, will be appended to the terminal's environment from the settings.
     "env": { "foo": "bar" },
