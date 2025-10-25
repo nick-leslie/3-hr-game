@@ -31,6 +31,9 @@ procedures. */
 game_init :: proc() {
   g_mem = new(GameMemory)
   rl.InitWindow(1280, 720, "My Odin + Raylib game")
+  //clicker code below
+
+  // slots code below
 }
 
 /* Simulation and rendering goes here. Return
