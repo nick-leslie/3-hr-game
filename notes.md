@@ -14,3 +14,10 @@ plan
 [] win effects
 [] modifires?
 [] sounds
+
+
+do we want score table with static scores
+the icons are an array of floats
+start game with a set ammount
+bankrupt = brick
+trying to be a billionare

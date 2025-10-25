@@ -15,7 +15,7 @@ GameMemory :: struct {
 g_mem: ^GameMemory
 
 /* Allocates the GameMemory that we use to store
-our game's state. We assign it to a global
+our game's state. We assign it to a global2
 variable so we can use it from the other
 procedures. */
 @(export)
@@ -49,8 +49,9 @@ game_shutdown :: proc() {
 }
 
 /* Returns a pointer to the game memory. When
-hot reloading, the main program needs a pointer
 to the game memory. It can then load a new game
+hot reloading, the main program needs a pointer
+hot reloading, the main program needs a pointer
 DLL and tell it to use the same memory by calling
 game_hot_reloaded on the new game DLL, supplying
 it the game memory pointer. */
