@@ -6,6 +6,8 @@ import rl "vendor:raylib"
 //clicker code below
 
 // slots code below
+slots_mult :: [6]f64{0.2,0.3,0.4,0.8,1.0,2.0}
+slots_chance:: [6]i64{50,60,70,80,90,95} // get above
 
 /* Our game's state lives within this struct. In
 order for hot reload to work the game's memory
