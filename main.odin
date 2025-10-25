@@ -4,6 +4,7 @@ import "core:dynlib"
 import "core:os"
 import "core:fmt"
 import "core:c/libc"
+import "core:mem"
 
 /* The main program loads a game DLL and checks
 once per frame if it changed. If changed, then
@@ -12,6 +13,25 @@ new DLL the memory the old one used. */
 main :: proc() {
   /* Used to version the game DLL. Incremented
   on each game DLL reload.*/
+
+  when ODIN_DEBUG {
+		track: mem.Tracking_Allocator
+		mem.tracking_allocator_init(&track, context.allocator)
+		context.allocator = mem.tracking_allocator(&track)
+	    fmt.printf("running debug alocator \n")
+
+		defer {
+		    fmt.printf("defer logg test\n")
+			if len(track.allocation_map) > 0 {
+				fmt.eprintf("=== %v allocations not freed: ===\n", len(track.allocation_map))
+				for _, entry in track.allocation_map {
+					fmt.eprintf("- %v bytes @ %v\n", entry.size, entry.location)
+				}
+			}
+			mem.tracking_allocator_destroy(&track)
+		}
+	}
+
   game_api_version := 0
   game_api, game_api_ok := load_game_api(game_api_version)
 
@@ -38,7 +58,7 @@ main :: proc() {
     and compare it to the date of the DLL used
     by the current game API. If different, then
     try to do a hot reload. */
-    dll_time, dll_time_err := os.last_write_time_by_name("./build/./build/game.dll")
+    dll_time, dll_time_err := os.last_write_time_by_name("./build/game.so")
 
     reload := dll_time_err == os.ERROR_NONE &&
               game_api.dll_time != dll_time
@@ -100,10 +120,10 @@ GameAPI :: struct {
 that contains pointers to the required
 procedures of the game DLL. */
 load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
-  dll_time, dll_time_err := os.last_write_time_by_name("./build/game.dll")
+  dll_time, dll_time_err := os.last_write_time_by_name("./build/game.so")
 
   if dll_time_err != os.ERROR_NONE {
-    fmt.println("Could not fetch last write date of ./build/game.dll")
+    fmt.println("Could not fetch last write date of ./build/game.so")
     return {}, false
   }
 
@@ -112,7 +132,7 @@ load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
   compiler can no longer write to it. Instead,
   make a unique name based on api_version and
   copy the DLL to that location. */
-  dll_name := fmt.tprintf("./build/game_{0}.dll", api_version)
+  dll_name := fmt.tprintf("./build/game_{0}.so", api_version)
 
   /* Copy the DLL. Sometimes fails since our
   program tries to copy it before the compiler
@@ -121,9 +141,9 @@ load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
 
   Note: Here I use Windows copy command, there
   are better ways to copy a file. */
-  copy_cmd := fmt.ctprintf("cp ./build/game.dll {0}", dll_name)
+  copy_cmd := fmt.ctprintf("cp ./build/game.so {0}", dll_name)
   if libc.system(copy_cmd) != 0 {
-    fmt.println("Failed to copy ./build/game.dll to {0}", dll_name)
+    fmt.println("Failed to copy ./build/game.so to {0}", dll_name)
     return {}, false
   }
 
@@ -132,6 +152,7 @@ load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
 
   if !lib_ok {
     fmt.println("Failed loading game DLL")
+    fmt.eprintln(dynlib.last_error())
     return {}, false
   }
 
@@ -168,8 +189,8 @@ unload_game_api :: proc(api: GameAPI) {
 
   Note: I use the windows del command, there are
   better ways to do this. */
-  del_cmd := fmt.ctprintf("rm ./build/game_{0}.dll", api.api_version)
+  del_cmd := fmt.ctprintf("rm ./build/game_{0}.so", api.api_version)
   if libc.system(del_cmd) != 0 {
-      fmt.println("Failed to remove ./build/game_{0}.dll copy", api.api_version)
+      fmt.println("Failed to remove ./build/game_{0}.so copy", api.api_version)
   }
 }
