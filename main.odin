@@ -38,7 +38,7 @@ main :: proc() {
     and compare it to the date of the DLL used
     by the current game API. If different, then
     try to do a hot reload. */
-    dll_time, dll_time_err := os.last_write_time_by_name("./build/./build/game.so")
+    dll_time, dll_time_err := os.last_write_time_by_name("./build/./build/game.dll")
 
     reload := dll_time_err == os.ERROR_NONE &&
               game_api.dll_time != dll_time
@@ -100,10 +100,10 @@ GameAPI :: struct {
 that contains pointers to the required
 procedures of the game DLL. */
 load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
-  dll_time, dll_time_err := os.last_write_time_by_name("./build/game.so")
+  dll_time, dll_time_err := os.last_write_time_by_name("./build/game.dll")
 
   if dll_time_err != os.ERROR_NONE {
-    fmt.println("Could not fetch last write date of ./build/game.so")
+    fmt.println("Could not fetch last write date of ./build/game.dll")
     return {}, false
   }
 
@@ -112,7 +112,7 @@ load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
   compiler can no longer write to it. Instead,
   make a unique name based on api_version and
   copy the DLL to that location. */
-  dll_name := fmt.tprintf("./build/game_{0}.so", api_version)
+  dll_name := fmt.tprintf("./build/game_{0}.dll", api_version)
 
   /* Copy the DLL. Sometimes fails since our
   program tries to copy it before the compiler
@@ -121,9 +121,9 @@ load_game_api :: proc(api_version: int) -> (GameAPI, bool) {
 
   Note: Here I use Windows copy command, there
   are better ways to copy a file. */
-  copy_cmd := fmt.ctprintf("cp ./build/game.so {0}", dll_name)
+  copy_cmd := fmt.ctprintf("cp ./build/game.dll {0}", dll_name)
   if libc.system(copy_cmd) != 0 {
-    fmt.println("Failed to copy ./build/game.so to {0}", dll_name)
+    fmt.println("Failed to copy ./build/game.dll to {0}", dll_name)
     return {}, false
   }
 
