@@ -30,6 +30,10 @@ false when you wish to terminate the program. */
 game_update :: proc() -> bool {
   g_mem.some_state += 1
   fmt.println(g_mem.some_state)
+  //clicker code below
+
+  // slots code below
+
   draw_game()
   return !rl.WindowShouldClose()
 }
@@ -37,6 +41,9 @@ game_update :: proc() -> bool {
 draw_game :: proc() {
     rl.BeginDrawing()
     rl.ClearBackground({160, 200, 255, 255})
+    //clicker code below
+
+    // slots code below
     rl.EndDrawing()
 }
 
@@ -45,6 +52,9 @@ has exited. Clean up your memory here. */
 @(export)
 game_shutdown :: proc() {
   rl.CloseWindow()
+  //clicker code below
+
+  // slots code below
   free(g_mem)
 }
 
@@ -66,3 +76,9 @@ hot reload occurs. See game_memory comments. */
 game_hot_reloaded :: proc(mem: ^GameMemory) {
   g_mem = mem
 }
+
+
+
+//clicker code below
+
+// slots code below
