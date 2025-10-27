@@ -34,14 +34,14 @@ GameMemory :: struct {
   num_sacrificed: int,
   sacrifice_pos_rect: rl.Rectangle,
   sacrifice_texture_rect: rl.Rectangle,
-  num_sacrificed_text_pos: Position,
+  num_sacrificed_text_pos: rl.Vector2,
   current_character_x: int,
   current_character_y: int,
   // slots code below
   slots: [3]int,
   current_slot:int,
   slot_textures: [6]rl.Texture2D,
-  game_fount:rl.Font,
+  game_font:rl.Font,
   lock_machine:bool,
   started_lock:f64,
   roll_offset:[6]f32,
@@ -51,6 +51,8 @@ GameMemory :: struct {
   first_calc: bool,
   show_win: bool,
   amount_won: int,
+  debit: int,
+  debit_dif: f32,
 }
 
 g_mem: ^GameMemory
@@ -90,7 +92,7 @@ game_init :: proc() {
   g_mem.slot_textures[3] = rl.LoadTexture("assets/Wizard_Hat.png")
   g_mem.slot_textures[5] = rl.LoadTexture("assets/Sapphire.png")
 
-  g_mem.game_fount = rl.LoadFont("")
+  g_mem.game_font = rl.LoadFont("assets/dungeon-mode.ttf")
 
   for i :=0;i<len(g_mem.roll_offset);i+=1 {
     g_mem.roll_offset[i] = auto_cast(i)* 128.0
@@ -103,7 +105,7 @@ game_init :: proc() {
   g_mem.buyin_mult = 0.5
   g_mem.first_calc = false
   g_mem.show_win = false
-
+  g_mem.debit = starting_debt
 
   // rand.reset(1)
 }
@@ -124,6 +126,17 @@ game_update :: proc() -> bool {
   // slots code below
   g_mem.buyin = cast(int) math.ceil(f64(g_mem.buyin_mult) * f64(g_mem.num_sacrificed))
   g_mem.buyin = max(g_mem.buyin, 1)
+  
+  ratio := f32(g_mem.player_coins) / f32(g_mem.debit);
+  
+  if ratio >= 1.0 {
+      // how much above the debt you are, relative to debt
+      g_mem.debit_dif = (ratio - 1.0) * 100.0;         // 159/100 -> 59%
+  } else {
+      // how much below the debt you are, relative to debt
+      g_mem.debit_dif = (1.0 - ratio) * 100.0;
+  }
+  
   if rl.IsKeyPressed(.SPACE) && g_mem.lock_machine == false {
       do_roll()
   }
@@ -152,11 +165,11 @@ draw_game :: proc() {
     rl.ClearBackground({160, 200, 255, 255})
 
     // slots code below
-    debit_string := fmt.ctprintf("Debit: %d",starting_debt)
+    debit_string := fmt.ctprintf("Debit: %d",g_mem.debit)
     //clicker code below
     rl.DrawTexturePro(characters, g_mem.sacrifice_texture_rect, g_mem.sacrifice_pos_rect, {0, 0}, 0, rl.WHITE)
     sacrificed_text := fmt.ctprintf("Number of sacrifices:\n%d", g_mem.num_sacrificed)
-    rl.DrawText(sacrificed_text, g_mem.num_sacrificed_text_pos.x, g_mem.num_sacrificed_text_pos.y, 36, rl.BLACK)
+    rl.DrawTextEx(g_mem.game_font, sacrificed_text, g_mem.num_sacrificed_text_pos, 23, 0, rl.BLACK)
 
     for i := 0; i< len(g_mem.slots);i+=1 {
         slot_val := g_mem.slots[i]
@@ -186,12 +199,20 @@ draw_game :: proc() {
     coins_string := fmt.ctprintf("Total coins: %d",g_mem.player_coins)
     buyin_string := fmt.ctprintf("Buy-in: %d",g_mem.buyin)
     win_string := fmt.ctprintf("Amount won: %d",g_mem.amount_won)
-    rl.DrawText(debit_string,500,500,20,{0,0,0,255})
-    rl.DrawText(coins_string, 500, 530, 20, rl.BLACK)
-    rl.DrawText(buyin_string, 500, 560, 20, rl.BLACK)
-
+    
+    debt_dif_string : cstring
+    if g_mem.debit_dif > 0 {
+        debt_dif_string = fmt.ctprintf("Percent Down: %.f",math.abs(g_mem.debit_dif))
+    } else {
+        debt_dif_string = fmt.ctprintf("Percent Up: %.f", math.abs(g_mem.debit_dif))
+    }
+    
+    rl.DrawTextEx(g_mem.game_font, debit_string, {170 ,500}, 20, 0, rl.BLACK)
+    rl.DrawTextEx(g_mem.game_font, coins_string, {170, 530}, 20, 0, rl.BLACK)
+    rl.DrawTextEx(g_mem.game_font, buyin_string, {170, 560}, 20, 0, rl.BLACK)
+    rl.DrawTextEx(g_mem.game_font, debt_dif_string, {170, 590}, 20, 0, rl.BLACK)
     if g_mem.show_win {
-        rl.DrawText(win_string, 180, 400, 35, rl.BLACK)
+        rl.DrawTextEx(g_mem.game_font, win_string, {100, 400}, 35, 2, rl.BLACK)
     }
 
     rl.EndDrawing()
