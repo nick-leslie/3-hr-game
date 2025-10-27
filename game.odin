@@ -88,14 +88,13 @@ game_init :: proc() {
   g_mem.slot_textures[2] = rl.LoadTexture("assets/Beer.png")
   g_mem.slot_textures[3] = rl.LoadTexture("assets/Wizard_Hat.png")
   g_mem.slot_textures[5] = rl.LoadTexture("assets/Sapphire.png")
-<<<<<<< HEAD
 
   for i :=0;i<len(g_mem.roll_offset);i+=1 {
     g_mem.roll_offset[i] = auto_cast(i)* 128.0
 
   }
 
-=======
+
   g_mem.buyin = 1
   g_mem.player_coins = 5
   g_mem.buyin_mult = 0.5
