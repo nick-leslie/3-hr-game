@@ -16,12 +16,12 @@ Slots :: enum int {
     WIZARD=4,
     SAPPHIRE=5
 }
-slots_mult :: [6]f64{0.2,0.3,0.4,0.8,1.0,2.0}
-slots_chance:: [6]i64{-1,40,50,80,90,95} // get above
+slots_mult :: [6]f64{0.7,0.9,1.0,1.5,2.0,3.0}
+slots_chance:: [6]i64{-1,30,40,50,65,80} // get above
 
 max_lock_time:f64 : 0.9
 
-starting_debt :: 2000000
+starting_debt :: 2000
 spin_speed :f32:1000
 /* Our game's state lives within this struct. In
 order for hot reload to work the game's memory
@@ -105,7 +105,7 @@ game_init :: proc() {
   g_mem.show_win = false
 
 
-  rand.reset(1)
+  // rand.reset(1)
 }
 
 /* Simulation and rendering goes here. Return
@@ -309,8 +309,42 @@ rest_machine :: proc() {
 }
 
 calculate_win :: proc() {
-    g_mem.amount_won = g_mem.buyin * g_mem.slots[0] + g_mem.buyin * g_mem.slots[1] + g_mem.buyin * g_mem.slots[2]
-    g_mem.player_coins += g_mem.amount_won
-     fmt.printf("Amount won: %d\n", g_mem.amount_won)
+    zero_one_same := g_mem.slots[0] == g_mem.slots[1]
+    one_two_same :=  g_mem.slots[1] == g_mem.slots[2]
+    zero_two_same := g_mem.slots[0] == g_mem.slots[2]
+    mult := slots_mult
 
+    fmt.printf("01:%t,12:%t,02:%t\n",zero_one_same,one_two_same,zero_two_same)
+    if zero_one_same && one_two_same && zero_two_same {
+        // all three same
+        calc := cast(f64)g_mem.buyin * (mult[g_mem.slots[0]] * 2)
+        fmt.println(calc)
+        g_mem.amount_won = cast(int)math.round(calc)
+        if g_mem.amount_won == 0 {
+            g_mem.amount_won = 1
+        }
+    } else if zero_one_same {
+        g_mem.amount_won = cast(int)math.round(cast(f64)g_mem.buyin * (mult[g_mem.slots[0]] * 1))
+        if g_mem.amount_won == 0 {
+            g_mem.amount_won = 1
+        }
+    } else if one_two_same {
+        g_mem.amount_won = cast(int)math.round(cast(f64)g_mem.buyin * (mult[g_mem.slots[1]] * 1))
+        if g_mem.amount_won == 0 {
+            g_mem.amount_won = 1
+        }
+    } else if zero_two_same {
+        g_mem.amount_won = cast(int)math.round(cast(f64)g_mem.buyin * (mult[g_mem.slots[0]] * 1))
+        if g_mem.amount_won == 0 {
+            g_mem.amount_won = 1
+        }
+    } else {
+        g_mem.amount_won = 0
+    }
+
+
+
+
+    g_mem.player_coins += g_mem.amount_won
+    fmt.printf("Amount won: %d\n", g_mem.amount_won)
 }
