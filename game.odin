@@ -14,6 +14,10 @@ pentagram: rl.Texture
 
 // Sounds
 death_sound: rl.Sound
+coin_sound: rl.Sound
+slot_1_sound:rl.Sound
+slot_2_sound:rl.Sound
+slot_3_sound:rl.Sound
 
 // slots code below
 Slots :: enum int {
@@ -96,11 +100,16 @@ game_init :: proc() {
   g_mem.num_sacrificed_text_pos = {800, 290}
   // Load in the character
   characters = rl.LoadTexture("assets/32rogues/rogues.png")
-  
+
   backgroundTexture = rl.LoadTexture("assets/Dungeon_brick_wall_grey.png")
   pentagram = rl.LoadTexture("assets/Pentagram.png")
   death_sound = rl.LoadSound("assets/death_sound.ogg")
-  rl.SetSoundVolume(death_sound, 0.75)
+  coin_sound = rl.LoadSound("assets/coin.wav")
+
+  slot_1_sound = rl.LoadSound("assets/slot_1.wav")
+  slot_2_sound = rl.LoadSound("assets/slot_2.wav")
+  slot_3_sound = rl.LoadSound("assets/slot_3.wav")
+  rl.SetSoundVolume(death_sound, 0.20)
   // slots code below
   g_mem.slots[0] = -1
   g_mem.slots[1] = -1
@@ -184,9 +193,9 @@ game_update :: proc() -> bool {
 draw_game :: proc() {
     rl.BeginDrawing()
     rl.ClearBackground({160, 200, 255, 255})
-    
+
     rl.DrawTexture(backgroundTexture, 0, 0, rl.WHITE)
-    
+
     // slots code below
     debit_string := fmt.ctprintf("Debit: %d",g_mem.debit)
     //clicker code below
@@ -233,7 +242,8 @@ draw_game :: proc() {
     } else {
         debt_dif_string = fmt.ctprintf("Percent Up: %.f", math.abs(g_mem.debit_dif))
     }
-    
+
+    rl.DrawTextEx(g_mem.game_font, "SINNER SLOTS", {10 ,50}, 50, 7, goldColor)
     rl.DrawTextEx(g_mem.game_font, debit_string, {170 ,500}, 20, 0, goldColor)
     rl.DrawTextEx(g_mem.game_font, coins_string, {170, 530}, 20, 0, goldColor)
     rl.DrawTextEx(g_mem.game_font, buyin_string, {170, 560}, 20, 0, goldColor)
@@ -339,6 +349,15 @@ do_roll :: proc() {
     fmt.println(g_mem.slots)
 
     g_mem.current_slot +=1
+    switch g_mem.current_slot {
+    case 1:
+        rl.PlaySound(slot_1_sound)
+    case 2:
+        rl.PlaySound(slot_2_sound)
+    case 3:
+        fmt.printf("played sound\n")
+        rl.PlaySound(slot_3_sound)
+    }
     if g_mem.current_slot >= len(g_mem.slots){
         g_mem.lock_machine = true
         g_mem.started_lock = rl.GetTime()
