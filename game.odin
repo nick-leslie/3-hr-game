@@ -16,7 +16,7 @@ Slots :: enum int {
     WIZARD=4,
     SAPPHIRE=5
 }
-slots_mult :: [6]f64{0.7,0.9,1.0,1.5,2.0,3.0}
+slots_mult :: [6]f64{1.4,1.9,2.0,2.5,3.0,10.0}
 slots_chance:: [6]i64{-1,30,40,50,65,80} // get above
 
 max_lock_time:f64 : 0.9
