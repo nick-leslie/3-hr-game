@@ -3,6 +3,7 @@ package game
 import "core:fmt"
 import rl "vendor:raylib"
 import "core:math/rand"
+import "core:math"
 
 //clicker code below
 characters: rl.Texture
@@ -42,7 +43,13 @@ GameMemory :: struct {
   slot_textures: [6]rl.Texture2D,
   lock_machine:bool,
   started_lock:f64,
-  roll_offset:[6]f32
+  roll_offset:[6]f32,
+  buyin: int,
+  buyin_mult: f32,
+  player_coins: int,
+  first_calc: bool,
+  show_win: bool,
+  amount_won: int,
 }
 
 g_mem: ^GameMemory
@@ -81,12 +88,21 @@ game_init :: proc() {
   g_mem.slot_textures[2] = rl.LoadTexture("assets/Beer.png")
   g_mem.slot_textures[3] = rl.LoadTexture("assets/Wizard_Hat.png")
   g_mem.slot_textures[5] = rl.LoadTexture("assets/Sapphire.png")
+<<<<<<< HEAD
 
   for i :=0;i<len(g_mem.roll_offset);i+=1 {
     g_mem.roll_offset[i] = auto_cast(i)* 128.0
 
   }
 
+=======
+  g_mem.buyin = 1
+  g_mem.player_coins = 5
+  g_mem.buyin_mult = 0.5
+  g_mem.first_calc = false
+  g_mem.show_win = false
+
+>>>>>>> 52c7aa40f592ff24e43c38e91370167474248989
 
   rand.reset(1)
 }
@@ -99,15 +115,30 @@ game_update :: proc() -> bool {
   // fmt.println(g_mem.some_state)
   //clicker code below
   character_clicked()
+<<<<<<< HEAD
 
   // slots code below
+=======
+>>>>>>> 52c7aa40f592ff24e43c38e91370167474248989
 
+  // slots code below
+  g_mem.buyin = cast(int) math.ceil(f64(g_mem.buyin_mult) * f64(g_mem.num_sacrificed))
+  g_mem.buyin = max(g_mem.buyin, 1)
   if rl.IsKeyPressed(.SPACE) && g_mem.lock_machine == false {
       do_roll()
   }
 
   if g_mem.lock_machine == true {
+
+      //Calculate win single time here
+      if g_mem.first_calc {
+          calculate_win() //debug
+          g_mem.first_calc = false
+      }
+
+
       if rl.GetTime() - g_mem.started_lock >= max_lock_time {
+          g_mem.show_win = false
           rest_machine()
       }
   }
@@ -142,6 +173,7 @@ draw_game :: proc() {
             rl.DrawTexturePro(g_mem.slot_textures[slot_val],{0,0,32,32},{150+ auto_cast(i* 128),250,128,128},{128/2,128/2},0.0,rl.WHITE)
         }
     }
+<<<<<<< HEAD
     for i :=0;i<len(g_mem.roll_offset);i+=1 {
       g_mem.roll_offset[i] += (spin_speed * rl.GetFrameTime())
     }
@@ -152,7 +184,19 @@ draw_game :: proc() {
     rl.DrawRectangleLinesEx({0,350,700,500},5,{0, 0, 0, 255})
     rl.DrawRectangle(700,0,90,900,{160, 200, 255, 255})
     rl.DrawRectangleLinesEx({700,0,90,900},5,{0, 0, 0, 255})
+=======
+    coins_string := fmt.ctprintf("Total coins: %d",g_mem.player_coins)
+    buyin_string := fmt.ctprintf("Buy-in: %d",g_mem.buyin)
+    win_string := fmt.ctprintf("Amount won: %d",g_mem.amount_won)
+>>>>>>> 52c7aa40f592ff24e43c38e91370167474248989
     rl.DrawText(debit_string,500,500,20,{0,0,0,255})
+    rl.DrawText(coins_string, 500, 530, 20, rl.BLACK)
+    rl.DrawText(buyin_string, 500, 560, 20, rl.BLACK)
+
+    if g_mem.show_win {
+        rl.DrawText(win_string, 180, 400, 35, rl.BLACK)
+    }
+
     rl.EndDrawing()
 
     free_all(context.temp_allocator)
@@ -215,6 +259,12 @@ character_clicked :: proc() {
 // slots code below
 
 do_roll :: proc() {
+
+    if g_mem.slots == -1 {
+        fmt.printf("Buyin: %d\n", g_mem.buyin)
+        g_mem.player_coins -= g_mem.buyin
+    }
+
     n := rand.int63_max(100) + 1 // gives number from 1 to 100
     fmt.printf("roll %d current_slot %d\n", n,g_mem.current_slot)
     fmt.println(g_mem.slots)
@@ -243,6 +293,8 @@ do_roll :: proc() {
     if g_mem.current_slot >= len(g_mem.slots){
         g_mem.lock_machine = true
         g_mem.started_lock = rl.GetTime()
+        g_mem.first_calc = true
+        g_mem.show_win = true
     }
 }
 
@@ -260,5 +312,8 @@ rest_machine :: proc() {
 }
 
 calculate_win :: proc() {
+    g_mem.amount_won = g_mem.buyin * g_mem.slots[0] + g_mem.buyin * g_mem.slots[1] + g_mem.buyin * g_mem.slots[2]
+    g_mem.player_coins += g_mem.amount_won
+     fmt.printf("Amount won: %d\n", g_mem.amount_won)
 
 }
