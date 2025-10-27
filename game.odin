@@ -347,4 +347,8 @@ calculate_win :: proc() {
 
     g_mem.player_coins += g_mem.amount_won
     fmt.printf("Amount won: %d\n", g_mem.amount_won)
+
+    if g_mem.player_coins < 0 {
+        // g_mem. g_mem.player_coins
+    }
 }
