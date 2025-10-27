@@ -7,6 +7,8 @@ import "core:math"
 
 //clicker code below
 characters: rl.Texture
+
+backgroundTexture: rl.Texture
 // slots code below
 Slots :: enum int {
     SKULL=0,
@@ -23,6 +25,11 @@ max_lock_time:f64 : 0.9
 
 starting_debt :: 2000
 spin_speed :f32:1000
+
+goldColor :rl.Color: {226, 192, 112, 255}
+darkIron :rl.Color: {64, 64, 64, 255}
+dimmedStone :rl.Color: {160, 160, 160, 255}
+blueGrey :rl.Color: {107, 124, 140, 255}
 /* Our game's state lives within this struct. In
 order for hot reload to work the game's memory
 must be transferable from one game DLL to
@@ -78,7 +85,8 @@ game_init :: proc() {
   g_mem.num_sacrificed_text_pos = {800, 290}
   // Load in the character
   characters = rl.LoadTexture("assets/32rogues/rogues.png")
-
+  
+  backgroundTexture = rl.LoadTexture("assets/Dungeon_brick_wall_grey.png")
 
   // slots code below
   g_mem.slots[0] = -1
@@ -163,13 +171,15 @@ game_update :: proc() -> bool {
 draw_game :: proc() {
     rl.BeginDrawing()
     rl.ClearBackground({160, 200, 255, 255})
-
+    
+    rl.DrawTexture(backgroundTexture, 0, 0, rl.WHITE)
+    
     // slots code below
     debit_string := fmt.ctprintf("Debit: %d",g_mem.debit)
     //clicker code below
     rl.DrawTexturePro(characters, g_mem.sacrifice_texture_rect, g_mem.sacrifice_pos_rect, {0, 0}, 0, rl.WHITE)
     sacrificed_text := fmt.ctprintf("Number of sacrifices:\n%d", g_mem.num_sacrificed)
-    rl.DrawTextEx(g_mem.game_font, sacrificed_text, g_mem.num_sacrificed_text_pos, 23, 0, rl.BLACK)
+    rl.DrawTextEx(g_mem.game_font, sacrificed_text, g_mem.num_sacrificed_text_pos, 23, 0, goldColor)
 
     for i := 0; i< len(g_mem.slots);i+=1 {
         slot_val := g_mem.slots[i]
@@ -190,12 +200,15 @@ draw_game :: proc() {
       g_mem.roll_offset[i] += (spin_speed * rl.GetFrameTime())
     }
 
-    rl.DrawRectangle(0,0,700,150,{160, 200, 255, 255})
-    rl.DrawRectangleLinesEx({0,0,700,150},5,{0, 0, 0, 255});
-    rl.DrawRectangle(0,350,700,500,{160, 200, 255, 255})
-    rl.DrawRectangleLinesEx({0,350,700,500},5,{0, 0, 0, 255})
-    rl.DrawRectangle(700,0,90,900,{160, 200, 255, 255})
-    rl.DrawRectangleLinesEx({700,0,90,900},5,{0, 0, 0, 255})
+    //rl.DrawRectangle(0,0,700,150,{160, 200, 255, 255})
+    rl.DrawTextureRec(backgroundTexture, {0,0,700,150}, {0,0}, rl.WHITE)
+    rl.DrawRectangleLinesEx({0,0,700,150},5,dimmedStone);
+    //rl.DrawRectangle(0,350,700,500,{160, 200, 255, 255})
+    rl.DrawTextureRec(backgroundTexture, {0,350,700,500}, {0,350}, rl.WHITE)
+    rl.DrawRectangleLinesEx({0,350,700,500},5,dimmedStone)
+    //rl.DrawRectangle(700,0,90,900,{160, 200, 255, 255})
+    rl.DrawTextureRec(backgroundTexture, {700,0,90,900}, {700,0}, rl.WHITE)
+    rl.DrawRectangleLinesEx({700,0,90,900},5,dimmedStone)
     coins_string := fmt.ctprintf("Total coins: %d",g_mem.player_coins)
     buyin_string := fmt.ctprintf("Buy-in: %d",g_mem.buyin)
     win_string := fmt.ctprintf("Amount won: %d",g_mem.amount_won)
@@ -207,12 +220,12 @@ draw_game :: proc() {
         debt_dif_string = fmt.ctprintf("Percent Up: %.f", math.abs(g_mem.debit_dif))
     }
     
-    rl.DrawTextEx(g_mem.game_font, debit_string, {170 ,500}, 20, 0, rl.BLACK)
-    rl.DrawTextEx(g_mem.game_font, coins_string, {170, 530}, 20, 0, rl.BLACK)
-    rl.DrawTextEx(g_mem.game_font, buyin_string, {170, 560}, 20, 0, rl.BLACK)
-    rl.DrawTextEx(g_mem.game_font, debt_dif_string, {170, 590}, 20, 0, rl.BLACK)
+    rl.DrawTextEx(g_mem.game_font, debit_string, {170 ,500}, 20, 0, goldColor)
+    rl.DrawTextEx(g_mem.game_font, coins_string, {170, 530}, 20, 0, goldColor)
+    rl.DrawTextEx(g_mem.game_font, buyin_string, {170, 560}, 20, 0, goldColor)
+    rl.DrawTextEx(g_mem.game_font, debt_dif_string, {170, 590}, 20, 0, goldColor)
     if g_mem.show_win {
-        rl.DrawTextEx(g_mem.game_font, win_string, {100, 400}, 35, 2, rl.BLACK)
+        rl.DrawTextEx(g_mem.game_font, win_string, {100, 400}, 35, 2, goldColor)
     }
 
     rl.EndDrawing()
@@ -226,6 +239,7 @@ has exited. Clean up your memory here. */
 game_shutdown :: proc() {
     //clicker code below
     rl.UnloadTexture(characters)
+    rl.UnloadTexture(backgroundTexture)
 
   // slots code below
   for i := 0; i< len(g_mem.slot_textures);i+=1 {
