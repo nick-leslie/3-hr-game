@@ -41,6 +41,7 @@ GameMemory :: struct {
   slots: [3]int,
   current_slot:int,
   slot_textures: [6]rl.Texture2D,
+  game_fount:rl.Font,
   lock_machine:bool,
   started_lock:f64,
   roll_offset:[6]f32,
@@ -88,6 +89,8 @@ game_init :: proc() {
   g_mem.slot_textures[2] = rl.LoadTexture("assets/Beer.png")
   g_mem.slot_textures[3] = rl.LoadTexture("assets/Wizard_Hat.png")
   g_mem.slot_textures[5] = rl.LoadTexture("assets/Sapphire.png")
+
+  g_mem.game_fount = rl.LoadFont("")
 
   for i :=0;i<len(g_mem.roll_offset);i+=1 {
     g_mem.roll_offset[i] = auto_cast(i)* 128.0
