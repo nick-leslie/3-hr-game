@@ -26,7 +26,7 @@ Slots :: enum int {
     SWORD=2,
     BEER=3,
     WIZARD=4,
-    SAPPHIRE=5
+    SAPPHIRE=5,
 }
 slots_mult :: [6]f64{1.4,1.9,2.0,2.5,3.0,5.0}
 slots_chance:: [6]i64{-1,30,40,50,65,80} // get above
@@ -76,7 +76,7 @@ g_mem: ^GameMemory
 
 Position :: struct {
     x: i32,
-    y: i32
+    y: i32,
 }
 
 /* Allocates the GameMemory that we use to store
@@ -157,14 +157,14 @@ game_update :: proc() -> bool {
   g_mem.buyin = cast(int) math.ceil(f64(g_mem.buyin_mult) * f64(g_mem.num_sacrificed))
   g_mem.buyin = max(g_mem.buyin, 1)
 
-  ratio := f32(g_mem.player_coins) / f32(g_mem.debit);
+  ratio := f32(g_mem.player_coins) / f32(g_mem.debit)
 
   if ratio >= 1.0 {
       // how much above the debt you are, relative to debt
-      g_mem.debit_dif = (ratio - 1.0) * 100.0;         // 159/100 -> 59%
+      g_mem.debit_dif = (ratio - 1.0) * 100.0         // 159/100 -> 59%
   } else {
       // how much below the debt you are, relative to debt
-      g_mem.debit_dif = (1.0 - ratio) * 100.0;
+      g_mem.debit_dif = (1.0 - ratio) * 100.0
   }
 
   if rl.IsKeyPressed(.SPACE) && g_mem.lock_machine == false {
@@ -188,6 +188,18 @@ game_update :: proc() -> bool {
 
   draw_game()
   return !rl.WindowShouldClose()
+}
+
+@(export)
+game_should_run :: proc() -> bool {
+	when ODIN_OS != .JS {
+		// Never run this proc in browser. It contains a 16 ms sleep on web!
+		if rl.WindowShouldClose() {
+			return false
+		}
+	}
+
+	return true
 }
 
 draw_game :: proc() {
@@ -225,7 +237,7 @@ draw_game :: proc() {
 
     //rl.DrawRectangle(0,0,700,150,{160, 200, 255, 255})
     rl.DrawTextureRec(backgroundTexture, {0,0,700,150}, {0,0}, rl.WHITE)
-    rl.DrawRectangleLinesEx({0,0,700,150},5,dimmedStone);
+    rl.DrawRectangleLinesEx({0,0,700,150},5,dimmedStone)
     //rl.DrawRectangle(0,350,700,500,{160, 200, 255, 255})
     rl.DrawTextureRec(backgroundTexture, {0,350,700,500}, {0,350}, rl.WHITE)
     rl.DrawRectangleLinesEx({0,350,700,500},5,dimmedStone)
@@ -302,7 +314,7 @@ character_clicked :: proc() {
     mouse_x := rl.GetMouseX()
     mouse_y := rl.GetMouseY()
     if(!rl.IsMouseButtonPressed(rl.MouseButton.LEFT)){
-        return;
+        return
     }
 
     mouse_vec : rl.Vector2 = {auto_cast mouse_x, auto_cast mouse_y}

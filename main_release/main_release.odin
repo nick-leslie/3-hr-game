@@ -1,5 +1,6 @@
-// These procs are the ones that will be called from `index.html`, which is
-// generated from `index_template.html`.
+/*
+These procs are the ones that will be called from `main_wasm.c`.
+*/
 
 package main_web
 
@@ -28,6 +29,7 @@ main_start :: proc "c" () {
 
 	web_context = context
 
+	// game.game_init_window()
 	game.game_init()
 }
 
@@ -42,10 +44,11 @@ main_update :: proc "c" () -> bool {
 main_end :: proc "c" () {
 	context = web_context
 	game.game_shutdown()
+	// game.game_shutdown_window()
 }
 
 @export
 web_window_size_changed :: proc "c" (w: c.int, h: c.int) {
 	context = web_context
-	// game.parent_window_size_changed(int(w), int(h))
+	// game.game_parent_window_size_changed(int(w), int(h))
 }
