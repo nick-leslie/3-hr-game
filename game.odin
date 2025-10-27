@@ -12,6 +12,9 @@ backgroundTexture: rl.Texture
 
 pentagram: rl.Texture
 
+// Sounds
+death_sound: rl.Sound
+
 // slots code below
 Slots :: enum int {
     SKULL=0,
@@ -80,6 +83,11 @@ procedures. */
 game_init :: proc() {
   g_mem = new(GameMemory)
   rl.InitWindow(1280, 720, "Lets go gambling!")
+  rl.InitAudioDevice()
+  if !rl.IsAudioDeviceReady() {
+      fmt.println("Audio device not ready!")
+  }
+  rl.SetMasterVolume(1.0)
   //clicker code below
   // Set initial values
   g_mem.num_sacrificed = 0
@@ -91,8 +99,8 @@ game_init :: proc() {
   
   backgroundTexture = rl.LoadTexture("assets/Dungeon_brick_wall_grey.png")
   pentagram = rl.LoadTexture("assets/Pentagram.png")
-
-
+  death_sound = rl.LoadSound("assets/death_sound.ogg")
+  rl.SetSoundVolume(death_sound, 0.75)
   // slots code below
   g_mem.slots[0] = -1
   g_mem.slots[1] = -1
@@ -251,6 +259,8 @@ game_shutdown :: proc() {
   for i := 0; i< len(g_mem.slot_textures);i+=1 {
       rl.UnloadTexture(g_mem.slot_textures[i])
   }
+  rl.UnloadSound(death_sound)
+  rl.CloseAudioDevice()
   rl.CloseWindow()
   free(g_mem)
 
@@ -291,6 +301,7 @@ character_clicked :: proc() {
         g_mem.current_character_x = auto_cast rl.GetRandomValue(0, 4) * 32
         g_mem.current_character_y = auto_cast rl.GetRandomValue(0, 6) * 32
         g_mem.sacrifice_texture_rect = {auto_cast g_mem.current_character_x, auto_cast g_mem.current_character_y, 32, 32}
+        rl.PlaySound(death_sound)
     }
 }
 
