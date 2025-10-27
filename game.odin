@@ -46,6 +46,9 @@ GameMemory :: struct {
   buyin: int,
   buyin_mult: f32,
   player_coins: int,
+  first_calc: bool,
+  show_win: bool,
+  amount_won: int,
 }
 
 g_mem: ^GameMemory
@@ -87,6 +90,8 @@ game_init :: proc() {
   g_mem.buyin = 1
   g_mem.player_coins = 5
   g_mem.buyin_mult = 0.5
+  g_mem.first_calc = false
+  g_mem.show_win = false
   
 
   rand.reset(1)
@@ -111,8 +116,14 @@ game_update :: proc() -> bool {
   if g_mem.lock_machine == true {
 
       //Calculate win single time here
-      if rl.GetTime() - g_mem.started_lock >= max_lock_time {
+      if g_mem.first_calc {
           calculate_win() //debug
+          g_mem.first_calc = false
+      }
+      
+      
+      if rl.GetTime() - g_mem.started_lock >= max_lock_time {
+          g_mem.show_win = false
           rest_machine()
       }
   }
@@ -142,9 +153,15 @@ draw_game :: proc() {
     }
     coins_string := fmt.ctprintf("Total coins: %d",g_mem.player_coins)
     buyin_string := fmt.ctprintf("Buy-in: %d",g_mem.buyin)
+    win_string := fmt.ctprintf("Amount won: %d",g_mem.amount_won)
     rl.DrawText(debit_string,500,500,20,{0,0,0,255})
     rl.DrawText(coins_string, 500, 530, 20, rl.BLACK)
     rl.DrawText(buyin_string, 500, 560, 20, rl.BLACK)
+    
+    if g_mem.show_win {
+        rl.DrawText(win_string, 180, 400, 35, rl.BLACK)
+    }
+    
     rl.EndDrawing()
 
     free_all(context.temp_allocator)
@@ -241,6 +258,8 @@ do_roll :: proc() {
     if g_mem.current_slot >= len(g_mem.slots){
         g_mem.lock_machine = true
         g_mem.started_lock = rl.GetTime()
+        g_mem.first_calc = true
+        g_mem.show_win = true
     }
 }
 
@@ -254,8 +273,8 @@ rest_machine :: proc() {
 }
 
 calculate_win :: proc() {
-    amount_won: int = g_mem.buyin * g_mem.slots[0] + g_mem.buyin * g_mem.slots[1] + g_mem.buyin * g_mem.slots[2]
-    g_mem.player_coins += amount_won
-     fmt.printf("Amount won: %d\n", amount_won)
+    g_mem.amount_won = g_mem.buyin * g_mem.slots[0] + g_mem.buyin * g_mem.slots[1] + g_mem.buyin * g_mem.slots[2]
+    g_mem.player_coins += g_mem.amount_won
+     fmt.printf("Amount won: %d\n", g_mem.amount_won)
      
 }
