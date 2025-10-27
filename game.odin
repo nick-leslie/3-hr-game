@@ -21,7 +21,7 @@ slots_chance:: [6]i64{-1,40,50,80,90,95} // get above
 max_lock_time:f64 : 0.9
 
 starting_debt :: 2000000
-
+spin_speed :f32:1000
 /* Our game's state lives within this struct. In
 order for hot reload to work the game's memory
 must be transferable from one game DLL to
@@ -41,7 +41,8 @@ GameMemory :: struct {
   current_slot:int,
   slot_textures: [6]rl.Texture2D,
   lock_machine:bool,
-  started_lock:f64
+  started_lock:f64,
+  roll_offset:[6]f32
 }
 
 g_mem: ^GameMemory
@@ -81,6 +82,11 @@ game_init :: proc() {
   g_mem.slot_textures[3] = rl.LoadTexture("assets/Wizard_Hat.png")
   g_mem.slot_textures[5] = rl.LoadTexture("assets/Sapphire.png")
 
+  for i :=0;i<len(g_mem.roll_offset);i+=1 {
+    g_mem.roll_offset[i] = auto_cast(i)* 128.0
+
+  }
+
 
   rand.reset(1)
 }
@@ -93,7 +99,7 @@ game_update :: proc() -> bool {
   // fmt.println(g_mem.some_state)
   //clicker code below
   character_clicked()
-  
+
   // slots code below
 
   if rl.IsKeyPressed(.SPACE) && g_mem.lock_machine == false {
@@ -113,23 +119,39 @@ game_update :: proc() -> bool {
 draw_game :: proc() {
     rl.BeginDrawing()
     rl.ClearBackground({160, 200, 255, 255})
+
+    // slots code below
+    debit_string := fmt.ctprintf("Debit: %d",starting_debt)
     //clicker code below
     rl.DrawTexturePro(characters, g_mem.sacrifice_texture_rect, g_mem.sacrifice_pos_rect, {0, 0}, 0, rl.WHITE)
     sacrificed_text := fmt.ctprintf("Number of sacrifices:\n%d", g_mem.num_sacrificed)
     rl.DrawText(sacrificed_text, g_mem.num_sacrificed_text_pos.x, g_mem.num_sacrificed_text_pos.y, 36, rl.BLACK)
 
-    // slots code below
-    debit_string := fmt.ctprintf("Debit: %d",starting_debt)
-
     for i := 0; i< len(g_mem.slots);i+=1 {
         slot_val := g_mem.slots[i]
         if(slot_val == -1) {
-            // draw rolling animation
+            for j := 0; j<len(g_mem.slot_textures);j+=1 {
+                y:f32 =  g_mem.roll_offset[j]
+                if g_mem.roll_offset[j] > 750 {
+                    y = 0
+                    g_mem.roll_offset[j] = 0
+                }
+                rl.DrawTexturePro(g_mem.slot_textures[j],{0,0,32,32},{150+ auto_cast(i* 128),y,128,128},{128/2,128/2},0.0,rl.WHITE)
+            }
         } else {
             rl.DrawTexturePro(g_mem.slot_textures[slot_val],{0,0,32,32},{150+ auto_cast(i* 128),250,128,128},{128/2,128/2},0.0,rl.WHITE)
         }
     }
+    for i :=0;i<len(g_mem.roll_offset);i+=1 {
+      g_mem.roll_offset[i] += (spin_speed * rl.GetFrameTime())
+    }
 
+    rl.DrawRectangle(0,0,700,150,{160, 200, 255, 255})
+    rl.DrawRectangleLinesEx({0,0,700,150},5,{0, 0, 0, 255});
+    rl.DrawRectangle(0,350,700,500,{160, 200, 255, 255})
+    rl.DrawRectangleLinesEx({0,350,700,500},5,{0, 0, 0, 255})
+    rl.DrawRectangle(700,0,90,900,{160, 200, 255, 255})
+    rl.DrawRectangleLinesEx({700,0,90,900},5,{0, 0, 0, 255})
     rl.DrawText(debit_string,500,500,20,{0,0,0,255})
     rl.EndDrawing()
 
@@ -180,7 +202,7 @@ character_clicked :: proc() {
     if(!rl.IsMouseButtonPressed(rl.MouseButton.LEFT)){
         return;
     }
-    
+
     mouse_vec : rl.Vector2 = {auto_cast mouse_x, auto_cast mouse_y}
     if (rl.CheckCollisionPointRec(mouse_vec, g_mem.sacrifice_pos_rect)){
         g_mem.num_sacrificed += 1
@@ -230,6 +252,10 @@ rest_machine :: proc() {
     g_mem.current_slot = 0
     for i := 0 ; i<len(g_mem.slots);i+=1 {
         g_mem.slots[i] = -1
+    }
+    for i :=0;i<len(g_mem.roll_offset);i+=1 {
+      g_mem.roll_offset[i] = auto_cast(i)* 128.0
+
     }
 }
 
