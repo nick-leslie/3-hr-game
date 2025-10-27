@@ -102,7 +102,6 @@ game_init :: proc() {
   g_mem.first_calc = false
   g_mem.show_win = false
 
->>>>>>> 52c7aa40f592ff24e43c38e91370167474248989
 
   rand.reset(1)
 }
@@ -115,11 +114,10 @@ game_update :: proc() -> bool {
   // fmt.println(g_mem.some_state)
   //clicker code below
   character_clicked()
-<<<<<<< HEAD
+
 
   // slots code below
-=======
->>>>>>> 52c7aa40f592ff24e43c38e91370167474248989
+
 
   // slots code below
   g_mem.buyin = cast(int) math.ceil(f64(g_mem.buyin_mult) * f64(g_mem.num_sacrificed))
@@ -173,7 +171,6 @@ draw_game :: proc() {
             rl.DrawTexturePro(g_mem.slot_textures[slot_val],{0,0,32,32},{150+ auto_cast(i* 128),250,128,128},{128/2,128/2},0.0,rl.WHITE)
         }
     }
-<<<<<<< HEAD
     for i :=0;i<len(g_mem.roll_offset);i+=1 {
       g_mem.roll_offset[i] += (spin_speed * rl.GetFrameTime())
     }
@@ -184,11 +181,9 @@ draw_game :: proc() {
     rl.DrawRectangleLinesEx({0,350,700,500},5,{0, 0, 0, 255})
     rl.DrawRectangle(700,0,90,900,{160, 200, 255, 255})
     rl.DrawRectangleLinesEx({700,0,90,900},5,{0, 0, 0, 255})
-=======
     coins_string := fmt.ctprintf("Total coins: %d",g_mem.player_coins)
     buyin_string := fmt.ctprintf("Buy-in: %d",g_mem.buyin)
     win_string := fmt.ctprintf("Amount won: %d",g_mem.amount_won)
->>>>>>> 52c7aa40f592ff24e43c38e91370167474248989
     rl.DrawText(debit_string,500,500,20,{0,0,0,255})
     rl.DrawText(coins_string, 500, 530, 20, rl.BLACK)
     rl.DrawText(buyin_string, 500, 560, 20, rl.BLACK)
